@@ -38,8 +38,25 @@ class TransformerBlock(nn.Module):
 
     def forward(self, x, mask):
         seq_len, batch_size, embed_dim = x.shape
+        
+        x = x.permute((1,0,2))
 
         # task implement scaled dot-product attention
+        Q = self.wq(x)
+        K = self.wk(x)
+        
+        # print("Q KT")
+        # print(Q.shape)
+        # print(K.permute((0,2,1)).shape)
+        
+        S = torch.bmm(Q, K.permute((0,2,1)) )/math.sqrt(1)
+        S = F.softmax(S, dim=2)
+        # print(S.shape)
+        
+        V = self.wv(x)
+        S = torch.bmm(S,V)
+        # print(S.shape)
+        
 
         # task implement residual connection
 
@@ -53,7 +70,9 @@ class TransformerBlock(nn.Module):
         # Hint: Writing efficient code is almost as important as writing correct code in ML.
         #       Avoid writing for-loops! Consider using the batch matrix multiplication operator torch.bmm
         raise NotImplementedError('Implement a transformer block')
-
+        print("CALLED TRANSFORMER")
+        return torch.Tensor([1])
+        
         return out
 
 class Transformer(nn.Module):
@@ -89,8 +108,15 @@ class Transformer(nn.Module):
             self.pos = torch.arange(0, x.shape[0], dtype=torch.long).to(x.device)
 
         x = self.word_embedding(x) * math.sqrt(self.dims)
+        
+        print("WORD EMBEDDING")
+        print(x.shape)
+        
         p = self.positional_embedding(self.pos)[:,None,:]
         z = F.relu(self.dropi(x) + self.dropi(p))
+        
+        print(z.shape)
+        
         for layer in self.transformer:
             z = layer(z, self.mask)
 
