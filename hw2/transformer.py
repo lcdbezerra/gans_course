@@ -14,16 +14,17 @@ class TransformerBlock(nn.Module):
         self.wv = nn.Linear(d, heads*k, bias=False)
         self.wc = nn.Linear(heads*k, d, bias=False)
         self.dropoutatt = nn.Dropout(dropout)
+        self.ln1 = nn.LayerNorm(d)
 
         self.w1 = nn.Linear(d, m)
         self.dropoutfc = nn.Dropout(dropout)
         self.w2 = nn.Linear(m, d)
 
         # task define the dropout
-
+        
 
         # task define the layer normalization
-
+        self.ln2 = nn.LayerNorm(d)
       
 
         nn.init.normal_(self.wq.weight, 0, .02)
@@ -45,35 +46,35 @@ class TransformerBlock(nn.Module):
         Q = self.wq(x)
         K = self.wk(x)
         
-        # print("Q KT")
-        # print(Q.shape)
-        # print(K.permute((0,2,1)).shape)
-        
-        S = torch.bmm(Q, K.permute((0,2,1)) )/math.sqrt(1)
+        S = torch.bmm(Q, K.permute((0,2,1)) )/math.sqrt(embed_dim)
         S = F.softmax(S, dim=2)
-        # print(S.shape)
         
         V = self.wv(x)
         S = torch.bmm(S,V)
-        # print(S.shape)
         
+        S = self.wc(S)
 
         # task implement residual connection
+        S = S+x
 
         # task implement the dropout
+        S = self.dropoutatt(S)
 
         # task implement the layer normalization
-
+        S = self.ln1(S)
 
         # task implement the posiion-wise feed forward network
+        x = S.clone()
+        S = self.w1(S)
+        S = self.w2(self.dropoutfc(S))
+        
+        S = self.ln2(S+x)
 
         # Hint: Writing efficient code is almost as important as writing correct code in ML.
         #       Avoid writing for-loops! Consider using the batch matrix multiplication operator torch.bmm
-        raise NotImplementedError('Implement a transformer block')
-        print("CALLED TRANSFORMER")
-        return torch.Tensor([1])
+        # raise NotImplementedError('Implement a transformer block')
         
-        return out
+        return S
 
 class Transformer(nn.Module):
     def __init__(self, seq_len, tokens, d, k, m, heads, layers, tied_weights=False, dropout=0., dropoutio=0.):
@@ -109,13 +110,13 @@ class Transformer(nn.Module):
 
         x = self.word_embedding(x) * math.sqrt(self.dims)
         
-        print("WORD EMBEDDING")
-        print(x.shape)
+        # print("WORD EMBEDDING")
+        # print(x.shape)
         
         p = self.positional_embedding(self.pos)[:,None,:]
         z = F.relu(self.dropi(x) + self.dropi(p))
         
-        print(z.shape)
+        # print(z.shape)
         
         for layer in self.transformer:
             z = layer(z, self.mask)
