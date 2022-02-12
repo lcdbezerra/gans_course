@@ -69,6 +69,9 @@ class TransformerBlock(nn.Module):
         S = self.w2(self.dropoutfc(S))
         
         S = self.ln2(S+x)
+        
+        # Back to original shape
+        S = S.permute((1,0,2))
 
         # Hint: Writing efficient code is almost as important as writing correct code in ML.
         #       Avoid writing for-loops! Consider using the batch matrix multiplication operator torch.bmm

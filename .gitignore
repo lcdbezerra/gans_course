@@ -133,3 +133,5 @@ dmypy.json
 
 # Ignore model stored in HW2
 hw2/model.pt
+
+.nfs*
