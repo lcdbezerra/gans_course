@@ -21,7 +21,7 @@ class TransformerBlock(nn.Module):
         self.w2 = nn.Linear(m, d)
 
         # task define the dropout
-        
+        self.dropout1 = nn.Dropout(dropout)
 
         # task define the layer normalization
         self.ln2 = nn.LayerNorm(d)
@@ -48,6 +48,9 @@ class TransformerBlock(nn.Module):
         
         S = torch.bmm(Q, K.permute((0,2,1)) )/math.sqrt(embed_dim)
         S = F.softmax(S, dim=2)
+        
+        # Extra dropout
+        S = self.dropout1(S)
         
         V = self.wv(x)
         S = torch.bmm(S,V)
