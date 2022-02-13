@@ -14,7 +14,6 @@ class TransformerBlock(nn.Module):
         self.wv = nn.Linear(d, heads*k, bias=False)
         self.wc = nn.Linear(heads*k, d, bias=False)
         self.dropoutatt = nn.Dropout(dropout)
-        self.ln1 = nn.LayerNorm(d)
 
         self.w1 = nn.Linear(d, m)
         self.dropoutfc = nn.Dropout(dropout)
@@ -22,8 +21,10 @@ class TransformerBlock(nn.Module):
 
         # task define the dropout
         self.dropout1 = nn.Dropout(dropout)
+        self.dropout2 = nn.Dropout(dropout)
 
         # task define the layer normalization
+        self.ln1 = nn.LayerNorm(d)
         self.ln2 = nn.LayerNorm(d)
       
 
@@ -45,20 +46,23 @@ class TransformerBlock(nn.Module):
         # task implement scaled dot-product attention
         Q = self.wq(x)
         K = self.wk(x)
+        V = self.wv(x)
+#         Q = self.wq(x).permute((1,0,2))
+#         K = self.wk(x).permute((1,0,2))
+#         V = self.wv(x).permute((1,0,2))
         
         S = torch.bmm(Q, K.permute((0,2,1)) )/math.sqrt(embed_dim)
-        S = F.softmax(S, dim=2)
+        S = F.softmax(S+mask, dim=2)
         
         # Extra dropout
         S = self.dropout1(S)
         
-        V = self.wv(x)
         S = torch.bmm(S,V)
-        
         S = self.wc(S)
 
         # task implement residual connection
         S = S+x
+#         S = self.dropoutatt(S)+x.permute((1,0,2))
 
         # task implement the dropout
         S = self.dropoutatt(S)
@@ -68,13 +72,15 @@ class TransformerBlock(nn.Module):
 
         # task implement the posiion-wise feed forward network
         x = S.clone()
-        S = self.w1(S)
+        S = F.relu(self.w1(S))
         S = self.w2(self.dropoutfc(S))
         
-        S = self.ln2(S+x)
+        S = self.ln2(self.dropout2(S)+x)
         
         # Back to original shape
         S = S.permute((1,0,2))
+        
+#         print(f"Out size: {S.shape}")
 
         # Hint: Writing efficient code is almost as important as writing correct code in ML.
         #       Avoid writing for-loops! Consider using the batch matrix multiplication operator torch.bmm
@@ -117,7 +123,7 @@ class Transformer(nn.Module):
         x = self.word_embedding(x) * math.sqrt(self.dims)
         
         # print("WORD EMBEDDING")
-        # print(x.shape)
+#         print(x.shape)
         
         p = self.positional_embedding(self.pos)[:,None,:]
         z = F.relu(self.dropi(x) + self.dropi(p))
@@ -126,6 +132,7 @@ class Transformer(nn.Module):
         
         for layer in self.transformer:
             z = layer(z, self.mask)
+#         raise ValueError
 
         z = self.dropo(z)
         outputs = torch.matmul(z, self.word_embedding.weight.t()) if self.tied_weights else self.decoder(z)
