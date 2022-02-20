@@ -43,6 +43,18 @@ class Discriminator(nn.Module):
             # Output size should be batch x 1 x 1 x 1 or batch x 1.
             # You can use a structure similar to the reverse of the generator.
             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            nn.Conv2d(1,128,4,2,1,bias=False),
+            nn.LeakyReLU(0.2,inplace=True),
+            nn.Conv2d(128, 256, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(256),
+            nn.LeakyReLU(0.2,inplace=True),
+            nn.Conv2d(256, 512, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(512),
+            nn.LeakyReLU(0.2,inplace=True),
+            #Shape (batch_sizex 512 x 4 x 4)
+            nn.Flatten(),
+            nn.Linear(512*4*4,1),
+            nn.Sigmoid(),
         )
 
     def forward(self, img):
