@@ -140,3 +140,4 @@ hw2/model.pt
 
 # Ignore MNIST dataset
 hw3/mnist
+hw3/mnist/*
