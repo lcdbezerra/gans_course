@@ -37,24 +37,36 @@ class Generator(nn.Module):
 class Discriminator(nn.Module):
     def __init__(self):
         super(Discriminator, self).__init__()
+        
+        sizes = [128,256,512]
+        
         self.net = nn.Sequential(
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # implement the structure of discriminator here. The input size is batch x 1 x 32 x 32.
-            # Output size should be batch x 1 x 1 x 1 or batch x 1.
-            # You can use a structure similar to the reverse of the generator.
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            nn.Conv2d(1,128,4,2,1,bias=False),
+            
+            nn.Conv2d(1,sizes[0], 4, 2, 1, bias=False),
             nn.LeakyReLU(0.2,inplace=True),
-            nn.Conv2d(128, 256, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(256),
+            nn.Conv2d(sizes[0], sizes[1], 4, 2, 1, bias=False),
+            nn.BatchNorm2d(sizes[1]),
             nn.LeakyReLU(0.2,inplace=True),
-            nn.Conv2d(256, 512, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(512),
+            nn.Conv2d(sizes[1], sizes[2], 4, 2, 1, bias=False),
+            nn.BatchNorm2d(sizes[2]),
             nn.LeakyReLU(0.2,inplace=True),
-            #Shape (batch_sizex 512 x 4 x 4)
             nn.Flatten(),
-            nn.Linear(512*4*4,1),
+            nn.Linear(sizes[2]*16,1),
             nn.Sigmoid(),
+            
+            
+            # nn.Conv2d(1,128,4,2,1,bias=False),
+            # nn.LeakyReLU(0.2,inplace=True),
+            # nn.Conv2d(128, 256, 4, 2, 1, bias=False),
+            # nn.BatchNorm2d(256),
+            # nn.LeakyReLU(0.2,inplace=True),
+            # nn.Conv2d(256, 512, 4, 2, 1, bias=False),
+            # nn.BatchNorm2d(512),
+            # nn.LeakyReLU(0.2,inplace=True),
+            # #Shape (batch_sizex 512 x 4 x 4)
+            # nn.Flatten(),
+            # nn.Linear(512*4*4,1),
+            # nn.Sigmoid(),
         )
 
     def forward(self, img):

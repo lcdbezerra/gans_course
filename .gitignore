@@ -137,3 +137,6 @@ hw2/model.pt
 .nfs*
 *.err
 *.out
+
+# Ignore MNIST dataset
+hw3/mnist
