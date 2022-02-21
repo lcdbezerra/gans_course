@@ -58,4 +58,4 @@ class Discriminator(nn.Module):
         )
 
     def forward(self, img):
-        return self.net(img)
+        return self.net(img).squeeze(-1)
