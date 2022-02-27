@@ -1,0 +1,1 @@
+In this project, you are required to implement the Euler Maruyama sampler and then generate images by using this sampler instead of the PC sampler. That means, you should finish all the TODOs in the ipynb and generate images by EM-sampling strategy.
