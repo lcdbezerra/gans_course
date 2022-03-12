@@ -141,3 +141,10 @@ hw2/model.pt
 # Ignore MNIST dataset
 hw3/mnist
 hw3/mnist/*
+
+# Ignore CUB dataset
+hw5/CIZSL/data
+hw5/CIZSL/data/*
+
+hw5/ZSL_GAN/data
+hw5/ZSL_GAN/data/*
